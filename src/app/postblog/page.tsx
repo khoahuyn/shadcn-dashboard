@@ -68,7 +68,7 @@ export default function PostBlogPage() {
                 uploadPostImage(image, data.postId).then(data => {
                     toast.success("Image Uploaded !!")
                 }).catch(error => {
-                    toast.error("Error in uploading image")
+                    toast.error("Error in uploading image!")
                     console.log(error)
                 })
 
