@@ -87,18 +87,6 @@ export default function PostBlogPage() {
             });
     }
 
-    // const handleFileChange = (event: any) => {
-    //     const file = event.target.files[0];
-    //     const reader = new FileReader();
-
-    //     reader.onloadend = () => {
-    //         const imageData = reader?.result; // Đây là dạng string của ảnh
-    //         setImage(imageData);
-    //     };
-
-    //     reader.readAsDataURL(file);
-    // };
-
 
     //handling file chagne event
     const handleFileChange = (event: any) => {
@@ -106,7 +94,6 @@ export default function PostBlogPage() {
         setImage(event.target.files[0])
     }
 
-    const [preview, setPreview] = useState("");
 
 
     function getImageData(event: ChangeEvent<HTMLInputElement>) {
