@@ -5,7 +5,9 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { ChangeEvent, useState } from "react";
 import { createPost, uploadPostImage } from '@/service/BlogService';
-import { toast } from "react-toastify"
+import { toast, ToastContainer } from "react-toastify"
+import 'react-toastify/dist/ReactToastify.css';
+import {storage} from '@/config/fireBaseConfig';
 import PageTitle from "@/components/PageTitle";
 import JoditEditor from 'jodit-react';
 import { Button } from "@/components/ui/button";
@@ -25,13 +27,14 @@ const formSchema = z.object({
     title: z.string().min(2, {
         message: "Title must be at least 2 characters.",
     }),
-    banner: z.string().url({
-        message: "Invalid banner URL"
-    }),
+    // banner: z.string().url({
+    //     message: "Invalid banner URL"
+    // }),
     des: z.string().min(2, {
         message: "Description must be at least 15 characters.",
     }),
     content: z.string().optional(),
+    // banner: z.string()
 })
 
 export default function PostBlogPage() {
@@ -39,44 +42,53 @@ export default function PostBlogPage() {
         resolver: zodResolver(formSchema),
         defaultValues: {
             title: "",
-            banner: "",
+            // banner: "",
             des: "",
             content: "",
         },
     })
 
-    const [post, setPost] = useState({
+    const [texteditor, setTexteditor] = useState({
         title: '',
         content: '',
         categoryId: ''
     })
 
-    const [image, setImage] = useState(null)
+    const [image, setImage] = useState<File | null>(null)
 
     function onSubmit(values: z.infer<typeof formSchema>) {
         const postData = {
             title: values.title,
-            banner: values.banner,
+            // banner: values.banner,
             des: values.des,
-            content: post.content
+            content: texteditor.content,
+            banner: image ? image.name :''
         };
 
-        console.log({ values, preview })
+        
 
         createPost(postData)
             .then(data => {
-                uploadPostImage(image, data.postId).then(data => {
-                    toast.success("Image Uploaded !!")
-                }).catch(error => {
-                    toast.error("Error in uploading image!")
-                    console.log(error)
-                })
+                // uploadPostImage(image, data.postId).then(data => {
+                //     toast.success("Image Uploaded !!")
+                // }).catch(error => {
+                //     toast.error("Error in uploading image!")
+                //     console.log(error)
+                // })
 
+                // if (image) {
+                //     uploadPostImage(image, data.postId).then(data => {
+                //         toast.success("Image Uploaded !!")
+                //     }).catch(error => {
+                //         toast.error("Error in uploading image!")
+                //         console.log(error)
+                //     })
+                // }
 
-                toast.success("Post Created !!")
+                toast.success("Post Created Susscessfull !!!")
                 form.reset({
                     title: "",
-                    banner: "",
+                    // banner: "",
                     des: "",
                     content: ""
                 });
@@ -87,28 +99,11 @@ export default function PostBlogPage() {
             });
     }
 
-
-    //handling file chagne event
-    const handleFileChange = (event: any) => {
-        console.log(event.target.files[0])
-        setImage(event.target.files[0])
-    }
-
-
-
-    function getImageData(event: ChangeEvent<HTMLInputElement>) {
-        // FileList is immutable, so we need to create a new one
-        const dataTransfer = new DataTransfer();
-
-        // Add newly uploaded images
-        Array.from(event.target.files!).forEach((image) =>
-            dataTransfer.items.add(image)
-        );
-
-        const files = dataTransfer.files;
-        const displayUrl = URL.createObjectURL(event.target.files![0]);
-
-        return { files, displayUrl };
+    // Xử lý sự kiện khi người dùng chọn tệp ảnh
+    const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+        if (event.target.files && event.target.files[0]) {
+            setImage(event.target.files[0]); // Lưu tệp ảnh vào state
+        }
     }
 
     return (
@@ -129,29 +124,10 @@ export default function PostBlogPage() {
                             </FormItem>
                         )}
                     />
-                    <div className="mt-3">
+                    {/* <div className="mt-3">
                         <FormLabel >Banner</FormLabel>
                         <Input id="image" type="file" onChange={handleFileChange} />
-                        {/* <FormField
-                            control={form.control}
-                            name="banner"
-                            render={({ field: { onChange, value, ...rest } }) => (
-                                <FormItem>
-                                    <FormLabel>Banner</FormLabel>
-                                    <FormControl>
-                                        <Input 
-                                            type="file" {...rest}
-                                            onChange={(event) => {
-                                                const { files, displayUrl} = getImageData(event)
-                                                setPreview(displayUrl);
-                                                onChange(files);
-                                            }}
-                                         />
-                                    </FormControl>
-                                </FormItem>
-                            )}
-                        /> */}
-                    </div>
+                    </div> */}
                     <FormField
                         control={form.control}
                         name="des"
@@ -168,13 +144,14 @@ export default function PostBlogPage() {
                     <div className="my-3">
                         <FormLabel>Post Content</FormLabel>
                         <JoditEditor
-                            value={post.content}
-                            onChange={(newContent) => setPost({ ...post, content: newContent })}
+                            value={texteditor.content}
+                            onChange={(newContent) => setTexteditor({ ...texteditor, content: newContent })}
                         />
                     </div>
                     <Button type="submit">Submit</Button>
                 </form>
             </Form>
+            <ToastContainer />
         </div>
     )
 }
