@@ -47,12 +47,12 @@ export default function SideNavbar({ }: Props) {
       <Nav
         isCollapsed={mobileWidth ? true : isCollapsed}
         links={[
-          {
-            title: "Dashboard",
-            href: "/",
-            icon: LayoutDashboard,
-            variant: "default"
-          },
+          // {
+          //   title: "Dashboard",
+          //   href: "/",
+          //   icon: LayoutDashboard,
+          //   variant: "ghost"
+          // },
           // {
           //   title: "Users",
           //   href: "/users",
@@ -75,7 +75,7 @@ export default function SideNavbar({ }: Props) {
             title: "Post Blog",
             href: "/postblog",
             icon: ArrowRight,
-            variant: "ghost"
+            variant: "default"
           },
           {
             title: "Tours",
@@ -89,12 +89,12 @@ export default function SideNavbar({ }: Props) {
             icon: BaggageClaim,
             variant: "ghost"
           },
-          {
-            title: "Type Tour",
-            href: "/typetour",
-            icon: Backpack,
-            variant: "ghost"
-          },
+          // {
+          //   title: "Type Tour",
+          //   href: "/typetour",
+          //   icon: Backpack,
+          //   variant: "ghost"
+          // },
         ]}
       />
     </div>

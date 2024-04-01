@@ -1,13 +1,16 @@
 "use client"
 
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
-import JoditEditor from 'jodit-react';
-import { useState, useEffect, useRef, useMemo } from 'react';
-
-import { Button } from "@/components/ui/button"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { ChangeEvent, useState } from "react";
+import { createTour } from '@/service/TourService';
+import { toast, ToastContainer } from "react-toastify"
+import 'react-toastify/dist/ReactToastify.css';
 import PageTitle from "@/components/PageTitle";
+import JoditEditor from 'jodit-react';
+import { Button } from "@/components/ui/button";
+import axios from "axios";
 import {
     Form,
     FormControl,
@@ -25,18 +28,14 @@ const formSchema = z.object({
         message: "Tour name be at least 5 characters.",
     }),
     banner: z.string().optional(),
-    rate: z.number().min(0, {
-        message: "Rate be at least 0.",
+    rate: z.coerce.number().min(1, {
+        message: "Rate must min is 1"
     }),
-    price: z.number().min(300000, {
-        message: "Price be at least 300000.",
+    price: z.coerce.number().min(50000, {
+        message: "Price must min is 50000"
     }),
-    totalTime: z.number().min(8, {
-        message: "Total time be at least 8 hours.",
-    }),
-    maxCustomer: z.number().min(1, {
-        message: "Numer customer be at least 1 people.",
-    }),
+    totalTime: z.string(),
+    maxCustomer: z.string(),
     content: z.string().optional(),
     note: z.string().optional(),
     timeLine: z.string().optional(),
@@ -50,9 +49,9 @@ export default function PostBlogPage() {
             nameTour: "",
             banner: "",
             rate: 0,
-            price: 10000,
-            totalTime: 8,
-            maxCustomer: 1,
+            price: 0,
+            totalTime: "",
+            maxCustomer: "",
             content: "",
             note: "",
             timeLine: "",
@@ -60,38 +59,78 @@ export default function PostBlogPage() {
     })
 
 
-    const [post, setPost] = useState({
+
+    const [texteditor, setTexteditor] = useState({
         title: '',
         content: '',
         categoryId: ''
     })
+    const [textnote, setTextnote] = useState({
+        title: '',
+        note: '',
+        categoryId: ''
+    })
+    const [texttimeLine, setTimeLine] = useState({
+        title: '',
+        timeLine: '',
+        categoryId: ''
+    })
 
-    const [image, setImage] = useState(null)
+    const [image, setImage] = useState<File | null>(null)
+    const UPLOAD_ENDPOINT = "localhost:8080/files/upload";
 
     function onSubmit(values: z.infer<typeof formSchema>) {
-        // Do something with the form values.
-        // ✅ This will be type-safe and validated.
-        console.log(values)
+        const postData = {
+            nameTour: values.nameTour,
+            banner: image ? image.name : '',
+            rate: values.rate,
+            price: values.price,
+            totalTime: values.totalTime,
+            maxCustomer: values.maxCustomer,
+            content: texteditor.content,
+            note: textnote.note,
+            timeLine: texttimeLine.timeLine,
+        };
+
+
+
+        createTour(postData)
+            .then(data => {
+                const formData = new FormData();
+                formData.append("myfile", image, image.name);
+                axios.post(UPLOAD_ENDPOINT, formData, {
+                    headers: {
+                        "content-type": "multipart/form-data"
+                    }
+                }).then(data => {
+                    debugger
+                    console.log(data.data);
+                });
+
+
+                toast.success("Post Tours  Successful !!!")
+                form.reset({
+                    nameTour: "",
+                    banner: "",
+                    rate: 0,
+                    price: 0,
+                    totalTime: "",
+                    maxCustomer: "",
+                    content: "",
+                    note: "",
+                    timeLine: "",
+                });
+            })
+            .catch((error) => {
+                toast.error("Post not created due to some error !!")
+                console.error("Error creating post:", error);
+            });
     }
 
-
-    const handleFileChange = (event: any) => {
-        console.log(event.target.files[0])
-        setImage(event.target.files[0])
-    }
-
-
-    const fieldChanged = (event: any) => {
-        // console.log(event)
-        setPost({ ...post, [event.target.name]: event.target.value })
-    }
-
-    const contentFieldChanaged = (data: any) => {
-
-        setPost({ ...post, 'content': data })
-
-
-    }
+    const handleOnChange = e => {
+        console.log(e.target.files[0]);
+        setImage(e.target.files[0]);
+    };
 
 
     return (
@@ -114,7 +153,7 @@ export default function PostBlogPage() {
                     />
                     <div className="mt-3">
                         <FormLabel >Banner</FormLabel>
-                        <Input id="image" type="file" onChange={handleFileChange} />
+                        <Input id="image" type="file" onChange={(e) => handleOnChange(e)} />
                     </div>
                     <FormField
                         control={form.control}
@@ -123,7 +162,7 @@ export default function PostBlogPage() {
                             <FormItem>
                                 <FormLabel>Rate</FormLabel>
                                 <FormControl>
-                                    <Input type="number" {...field} />
+                                    <Input {...field} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -149,7 +188,7 @@ export default function PostBlogPage() {
                             <FormItem>
                                 <FormLabel>Total time</FormLabel>
                                 <FormControl>
-                                    <Input type="number" {...field} />
+                                    <Input {...field} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -162,7 +201,7 @@ export default function PostBlogPage() {
                             <FormItem>
                                 <FormLabel>Number Customer</FormLabel>
                                 <FormControl>
-                                    <Input type="number" {...field} />
+                                    <Input {...field} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -171,12 +210,24 @@ export default function PostBlogPage() {
                     <div className="my-3">
                         <FormLabel>Post Content</FormLabel>
                         <JoditEditor
-                            ref={editor}
-                            value={post.content}
-
-                            onChange={(newContent) => contentFieldChanaged(newContent)}
+                            value={texteditor.content}
+                            onChange={(newContent) => setTexteditor({ ...texteditor, content: newContent })}
                         />
                     </div>
+                    {/* <div className="my-3">
+                        <FormLabel>Post Note</FormLabel>
+                        <JoditEditor
+                            value={textnote.note}
+                            onChange={(newNote) => setTextnote({ ...textnote, note: newNote })}
+                        />
+                    </div>
+                    <div className="my-3">
+                        <FormLabel>Post TimeLine</FormLabel>
+                        <JoditEditor
+                            value={texttimeLine.timeLine}
+                            onChange={(newtimeLine) => setTimeLine({ ...texttimeLine, timeLine: newtimeLine })}
+                        />
+                    </div> */}
                     <Button type="submit">Submit</Button>
                 </form>
             </Form>

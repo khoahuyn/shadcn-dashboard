@@ -4,13 +4,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { ChangeEvent, useState } from "react";
-import { createPost, uploadPostImage } from '@/service/BlogService';
+import { createPost } from '@/service/BlogService';
 import { toast, ToastContainer } from "react-toastify"
 import 'react-toastify/dist/ReactToastify.css';
 import PageTitle from "@/components/PageTitle";
 import JoditEditor from 'jodit-react';
 import { Button } from "@/components/ui/button";
-
+import axios from "axios";
 import {
     Form,
     FormControl,
@@ -30,7 +30,7 @@ const formSchema = z.object({
         message: "Description must be at least 15 characters.",
     }),
     content: z.string().optional(),
-    // banner: z.string()
+    banner: z.string().optional()
 })
 
 export default function PostBlogPage() {
@@ -38,7 +38,7 @@ export default function PostBlogPage() {
         resolver: zodResolver(formSchema),
         defaultValues: {
             title: "",
-            // banner: "",
+            banner: "",
             des: "",
             content: "",
         },
@@ -51,25 +51,36 @@ export default function PostBlogPage() {
     })
 
     const [image, setImage] = useState<File | null>(null)
+    const UPLOAD_ENDPOINT = "localhost:8080/files/upload";
 
     function onSubmit(values: z.infer<typeof formSchema>) {
         const postData = {
             title: values.title,
             des: values.des,
             content: texteditor.content,
-            banner: image ? image.name :''
+            banner: image ? image.name : ''
         };
 
-        
+
 
         createPost(postData)
             .then(data => {
+                const formData = new FormData();
+                formData.append("myfile", image, image.name);
+                axios.post(UPLOAD_ENDPOINT, formData, {
+                    headers: {
+                        "content-type": "multipart/form-data"
+                    }
+                }).then(data => {
+                    debugger
+                    console.log(data.data);
+                });
 
 
-                toast.success("Post Created Susscessfull !!!")
+                toast.success("Post Created Successful !!!")
                 form.reset({
                     title: "",
-                    // banner: "",
+                    banner: "",
                     des: "",
                     content: ""
                 });
@@ -80,12 +91,10 @@ export default function PostBlogPage() {
             });
     }
 
-    // Xử lý sự kiện khi người dùng chọn tệp ảnh
-    const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-        if (event.target.files && event.target.files[0]) {
-            setImage(event.target.files[0]); // Lưu tệp ảnh vào state
-        }
-    }
+    const handleOnChange = e => {
+        console.log(e.target.files[0]);
+        setImage(e.target.files[0]);
+    };
 
     return (
         <div className="flex flex-col gap-5  w-full">
@@ -105,10 +114,10 @@ export default function PostBlogPage() {
                             </FormItem>
                         )}
                     />
-                    {/* <div className="mt-3">
+                    <div className="mt-3">
                         <FormLabel >Banner</FormLabel>
-                        <Input id="image" type="file" onChange={handleFileChange} />
-                    </div> */}
+                        <Input id="image" type="file" onChange={(e) => handleOnChange(e)} />
+                    </div>
                     <FormField
                         control={form.control}
                         name="des"

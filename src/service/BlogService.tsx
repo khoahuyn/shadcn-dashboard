@@ -15,14 +15,3 @@ export const createPost = async (postData: any) => {
 };
 
 
-export const uploadPostImage = async (image: string, postId: string) => {
-    let formData = new FormData();
-    formData.append("image", image);
-    return await axios
-        .post(`localhost:8080/files/upload${postId}`, formData, {
-            headers: {
-                "Content-Type": "multipart/form-data",
-            },
-        })
-        .then((response) => response.data);
-};
