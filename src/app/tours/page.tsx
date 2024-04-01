@@ -34,15 +34,6 @@ const columns: ColumnDef<ToursPage>[] = [
         header: "Tour Name"
     },
     {
-        accessorKey: "banner",
-        header: "Banner",
-        cell: ({ row }) => {
-            return (
-                <img src={row.getValue("banner")} alt={"Loi file"} className="w-20 h-auto" />
-            );
-        }
-    },
-    {
         accessorKey: "maxCustomer",
         header: "Number Customer"
     },

@@ -7,7 +7,6 @@ import { ChangeEvent, useState } from "react";
 import { createPost, uploadPostImage } from '@/service/BlogService';
 import { toast, ToastContainer } from "react-toastify"
 import 'react-toastify/dist/ReactToastify.css';
-import {storage} from '@/config/fireBaseConfig';
 import PageTitle from "@/components/PageTitle";
 import JoditEditor from 'jodit-react';
 import { Button } from "@/components/ui/button";
@@ -27,9 +26,6 @@ const formSchema = z.object({
     title: z.string().min(2, {
         message: "Title must be at least 2 characters.",
     }),
-    // banner: z.string().url({
-    //     message: "Invalid banner URL"
-    // }),
     des: z.string().min(2, {
         message: "Description must be at least 15 characters.",
     }),
@@ -59,7 +55,6 @@ export default function PostBlogPage() {
     function onSubmit(values: z.infer<typeof formSchema>) {
         const postData = {
             title: values.title,
-            // banner: values.banner,
             des: values.des,
             content: texteditor.content,
             banner: image ? image.name :''
@@ -69,21 +64,7 @@ export default function PostBlogPage() {
 
         createPost(postData)
             .then(data => {
-                // uploadPostImage(image, data.postId).then(data => {
-                //     toast.success("Image Uploaded !!")
-                // }).catch(error => {
-                //     toast.error("Error in uploading image!")
-                //     console.log(error)
-                // })
 
-                // if (image) {
-                //     uploadPostImage(image, data.postId).then(data => {
-                //         toast.success("Image Uploaded !!")
-                //     }).catch(error => {
-                //         toast.error("Error in uploading image!")
-                //         console.log(error)
-                //     })
-                // }
 
                 toast.success("Post Created Susscessfull !!!")
                 form.reset({

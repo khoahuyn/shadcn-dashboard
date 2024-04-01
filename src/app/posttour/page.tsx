@@ -59,7 +59,6 @@ export default function PostBlogPage() {
         },
     })
 
-    const editor = useRef(null);
 
     const [post, setPost] = useState({
         title: '',
@@ -69,7 +68,6 @@ export default function PostBlogPage() {
 
     const [image, setImage] = useState(null)
 
-    // 2. Define a submit handler.
     function onSubmit(values: z.infer<typeof formSchema>) {
         // Do something with the form values.
         // ✅ This will be type-safe and validated.
@@ -172,14 +170,6 @@ export default function PostBlogPage() {
                     />
                     <div className="my-3">
                         <FormLabel>Post Content</FormLabel>
-                        {/* <Input
-                                type="textarea"
-                                id="content"
-                                placeholder="Enter here"
-                                className="rounded-0"
-                                style={{ height: '300px' }}
-                            /> */}
-
                         <JoditEditor
                             ref={editor}
                             value={post.content}
